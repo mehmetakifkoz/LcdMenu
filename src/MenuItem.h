@@ -129,7 +129,7 @@ class MenuItem {
      * Set the text of the item
      * @param text text to display for the item
      */
-    void setText(const char* text){};
+    void setText(const char* text){ this->text=text; };
     /**
      * Set the callback on the item
      * @param callback reference to callback function
