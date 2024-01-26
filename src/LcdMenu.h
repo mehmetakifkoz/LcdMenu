@@ -32,7 +32,7 @@
 #endif
 
 #include <MenuItem.h>
-#include <utils.h>
+#include <utils/utils.h>
 
 /**
  * The LcdMenu class contains all fields and methods to manipulate the menu
@@ -388,7 +388,9 @@ class LcdMenu {
     void update() {
         if (!enableUpdate) return;
         lcd->display();
+#ifndef USE_STANDARD_LCD
         lcd->setBacklight(backlightState);
+#endif
         drawMenu();
         drawCursor();
         startTime = millis();
@@ -407,6 +409,8 @@ class LcdMenu {
         //
         if (isAtTheStart() || isEditModeEnabled) return;
         cursorPosition--;
+        // Log
+        printCmd(F("UP"));
         //
         // determine if cursor is at the top of the screen
         //
@@ -429,6 +433,8 @@ class LcdMenu {
         //
         if (isAtTheEnd() || isEditModeEnabled) return;
         cursorPosition++;
+        // Log
+        printCmd(F("DOWN"));
         //
         // determine if cursor is at the bottom of the screen
         //
@@ -451,6 +457,8 @@ class LcdMenu {
      * - Toggle the state of an item.
      */
     void enter() {
+        // Log
+        printCmd(F("ENTER"));
         MenuItem* item = currentMenuTable[cursorPosition];
         //
         // determine the type of menu entry, then execute it
@@ -537,6 +545,8 @@ class LcdMenu {
      * Navigates up once.
      */
     void back() {
+        // Log
+        printCmd(F("BACK"));
         MenuItem* item = currentMenuTable[cursorPosition];
         //
         // Back action different when on ItemInput
@@ -599,6 +609,9 @@ class LcdMenu {
             case MENU_ITEM_LIST: {
                 item->setItemIndex(item->getItemIndex() - 1);
                 if (previousIndex != item->getItemIndex()) update();
+                // Log
+                printCmd(F("LEFT"),
+                         item->getItems()[item->getItemIndex()].c_str());
                 break;
             }
 #endif
@@ -606,6 +619,10 @@ class LcdMenu {
             case MENU_ITEM_INPUT: {
                 blinkerPosition--;
                 resetBlinker();
+                // Log
+                printCmd(F("LEFT"),
+                         item->getValue()[blinkerPosition -
+                                          (strlen(item->getText()) + 2)]);
                 break;
             }
 #endif
@@ -614,9 +631,15 @@ class LcdMenu {
                 if (isInEditMode()) {
                     item->decrement();
                     update();
+                    // Log
+                    printCmd(F("LEFT"), item->getValue());
                 }
             }
 #endif
+            default:
+                // Log
+                printCmd(F("LEFT"));
+                break;
         }
     }
     /**
@@ -643,6 +666,9 @@ class LcdMenu {
                                    item->getItemCount());
                 // constrain(item->itemIndex + 1, 0, item->itemCount - 1);
                 update();
+                // Log
+                printCmd(F("RIGHT"),
+                         item->getItems()[item->getItemIndex()].c_str());
                 break;
             }
 #endif
@@ -650,6 +676,10 @@ class LcdMenu {
             case MENU_ITEM_INPUT: {
                 blinkerPosition++;
                 resetBlinker();
+                // Log
+                printCmd(F("RIGHT"),
+                         item->getValue()[blinkerPosition -
+                                          (strlen(item->getText()) + 2)]);
                 break;
             }
 #endif
@@ -658,10 +688,16 @@ class LcdMenu {
                 if (isInEditMode()) {
                     item->increment();
                     update();
+                    // Log
+                    printCmd(F("RIGHT"), item->getValue());
                 }
                 break;
             }
 #endif
+            default:
+                // Log
+                printCmd(F("RIGHT"));
+                break;
         }
     }
 #ifdef ItemInput_H
@@ -676,6 +712,8 @@ class LcdMenu {
         MenuItem* item = currentMenuTable[cursorPosition];
         //
         if (item->getType() != MENU_ITEM_INPUT) return;
+        // Log
+        printCmd(F("BACKSPACE"));
         //
         uint8_t p = blinkerPosition - (strlen(item->getText()) + 2) - 1;
         remove(item->getValue(), p, 1);
@@ -688,7 +726,7 @@ class LcdMenu {
      * used for `Input` type menu items
      * @param character character to append
      */
-    void type(char character) {
+    void type(const char character) {
         MenuItem* item = currentMenuTable[cursorPosition];
         //
         if (item->getType() != MENU_ITEM_INPUT || !isEditModeEnabled) return;
@@ -725,6 +763,8 @@ class LcdMenu {
         // repaint menu
         //
         update();
+        // Log
+        printCmd(F("TYPE-CHAR"), character);
     }
     /**
      * Draw a character on the display
@@ -744,6 +784,8 @@ class LcdMenu {
         resetBlinker();
         //
         isCharPickerActive = true;
+        // Log
+        printCmd(F("DRAW-CHAR"), c);
     }
     /**
      * Clear the value of the input field
@@ -752,6 +794,8 @@ class LcdMenu {
         MenuItem* item = currentMenuTable[cursorPosition];
         //
         if (item->getType() != MENU_ITEM_INPUT) return;
+        // Log
+        printCmd(F("CLEAR"));
         //
         // set the value
         //
@@ -815,7 +859,9 @@ class LcdMenu {
     void updateTimer() {
         if (millis() == startTime + timeout) {
             lcd->noDisplay();
+#ifndef USE_STANDARD_LCD
             lcd->noBacklight();
+#endif
         }
     }
     /**
@@ -841,6 +887,7 @@ class LcdMenu {
     MenuItem* operator[](const uint8_t position) {
         return currentMenuTable[position];
     }
+#ifndef USE_STANDARD_LCD
     /**
      * Set the Backlight state
      * @param state
@@ -849,4 +896,5 @@ class LcdMenu {
         backlightState = state;
         update();
     }
+#endif
 };

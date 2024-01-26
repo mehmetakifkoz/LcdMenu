@@ -27,7 +27,7 @@
 #ifndef MenuItem_H
 #define MenuItem_H
 
-#include "Constants.h"
+#include "utils/constants.h"
 
 /**
  * The MenuItem class
@@ -139,6 +139,11 @@ class MenuItem {
      * Current index of list for `ItemList`
      */
     virtual void setItemIndex(uint16_t itemIndex){};
+    /**
+     * Set the progress on the item
+     * @param uint16_t progress for the item
+     */
+    virtual void setProgress(uint16_t value){};
 
     /**
      * Operators

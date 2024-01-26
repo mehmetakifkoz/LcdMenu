@@ -1,6 +1,6 @@
 #include "utils.h"
 
-#include "Constants.h"
+#include "constants.h"
 
 void substring(char* str, uint8_t start, uint8_t size, char* substr) {
     strncpy(substr, str + start, size);
@@ -47,4 +47,23 @@ float mapProgress(uint16_t progress, float minValue, float maxValue) {
     // range
     return static_cast<float>(progress) / MAX_PROGRESS * (maxValue - minValue) +
            minValue;
+}
+
+void printCmd(const __FlashStringHelper* command) {
+    Serial.print(F("#CMD# "));
+    Serial.println(command);
+}
+
+void printCmd(const __FlashStringHelper* command, const char value) {
+    Serial.print(F("#CMD# "));
+    Serial.print(command);
+    Serial.print(F("="));
+    Serial.println(value);
+}
+
+void printCmd(const __FlashStringHelper* command, const char* value) {
+    Serial.print(F("#CMD# "));
+    Serial.print(command);
+    Serial.print(F("="));
+    Serial.println(value);
 }
